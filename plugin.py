@@ -154,7 +154,7 @@ class Switch:
 
 
 class Dev:
-    def __init__(self,ID,name,nod,register,functioncode: int = 3,options=None, Used: int = 1, Description=None, TypeName=None,Type: int = 0, SubType:int = 0 , SwitchType:int = 0  ):
+    def __init__(self,ID,name,nod,register,functioncode: int = 3,options=None, Used: int = 1, signed: bool = False, Description=None, TypeName=None,Type: int = 0, SubType:int = 0 , SwitchType:int = 0  ):
         self.ID = ID
         self.name = name
         self.TypeName = TypeName if TypeName is not None else ""
@@ -163,6 +163,7 @@ class Dev:
         self.SwitchType = SwitchType
         self.nod = nod
         self.value = 0
+        self.signed = signed        
         self.register = register
         self.functioncode = functioncode
         self.options = options if options is not None else None
@@ -182,7 +183,7 @@ class Dev:
 
     def UpdateValue(self,RS485):
                  if self.functioncode == 3 or self.functioncode == 4:
-                     payload = RS485.read_register(self.register,number_of_decimals=self.nod,functioncode=self.functioncode)
+                     payload = RS485.read_register(self.register,number_of_decimals=self.nod,functioncode=self.functioncode,signed=self.signed)
                  data = payload
                  Devices[self.ID].Update(0,str(data)+';0',True) # force update, even if the voltage has no changed. 
                  if Parameters["Mode6"] == 'Debug':
@@ -210,13 +211,13 @@ class BasePlugin:
         Domoticz.Log("ThesslaGreen-Modbus plugin start")
 
         self.sensors = [
-                 Dev(1,"outside_temp",1,16,functioncode=4,TypeName="Temperature",Description="Outside temperature"),
-                 Dev(2,"supply_temp",1,17,functioncode=4,TypeName="Temperature",Description="Supply temperature"),
-                 Dev(3,"exhaust_temp",1,18,functioncode=4,TypeName="Temperature",Description="Exhaust temperature"),
-                 Dev(4,"fpx_temp",1,19,functioncode=4,TypeName="Temperature"),
-                 Dev(5,"duct_supply_temp",1,20,functioncode=4,Used=0,TypeName="Temperature"),
-                 Dev(6,"gwc_temp",1,21,functioncode=4,Used=0,TypeName="Temperature"),
-                 Dev(7,"ambient_temp",1,22,functioncode=4,TypeName="Temperature"),
+                 Dev(1,"outside_temp",1,16,functioncode=4,TypeName="Temperature",Description="Outside temperature",signed=True),
+                 Dev(2,"supply_temp",1,17,functioncode=4,TypeName="Temperature",Description="Supply temperature",signed=True),
+                 Dev(3,"exhaust_temp",1,18,functioncode=4,TypeName="Temperature",Description="Exhaust temperature",signed=True),
+                 Dev(4,"fpx_temp",1,19,functioncode=4,TypeName="Temperature",signed=True),
+                 Dev(5,"duct_supply_temp",1,20,functioncode=4,Used=0,TypeName="Temperature",signed=True),
+                 Dev(6,"gwc_temp",1,21,functioncode=4,Used=0,TypeName="Temperature",signed=True),
+                 Dev(7,"ambient_temp",1,22,functioncode=4,TypeName="Temperature",signed=True),
                  Dev(8,"supplyAirFlow",0,256,functioncode=3,Type=243,SubType=30),
                  Dev(9,"exhaustAirFlow",0,257,functioncode=3,Type=243,SubType=30)
 
