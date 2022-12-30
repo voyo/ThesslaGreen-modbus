@@ -15,7 +15,7 @@ Requirements:
         <param field="SerialPort" label="Modbus Port" width="200px" required="true" default="/dev/ttyUSB0" />
         <param field="Mode1" label="Baud rate" width="40px" required="true" default="9600"  />
         <param field="Mode2" label="Device ID" width="40px" required="true" default="1" />
-        <param field="Mode3" label="Reading Interval min." width="40px" required="true" default="1" />
+        <param field="Mode3" label="Reading Interval * 10s." width="40px" required="true" default="1" />
         <param field="Mode6" label="Debug" width="75px">
             <options>
                 <option label="True" value="Debug"/>
