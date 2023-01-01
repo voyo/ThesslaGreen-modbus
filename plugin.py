@@ -30,7 +30,7 @@ Requirements:
 import minimalmodbus
 import serial
 import Domoticz
-
+from time import sleep
 
 
 
@@ -131,7 +131,16 @@ class Switch:
 
    def UpdateValue(self,RS485):
         if self.functioncode == 3 or self.functioncode == 4:
-                     payload = RS485.read_register(self.register,number_of_decimals=self.nod,functioncode=self.functioncode)
+                     while True:
+                           try:
+                               payload = RS485.read_register(self.register,number_of_decimals=self.nod,functioncode=self.functioncode)
+                           except Exception as e:
+#                    Domoticz.Log("Connection failure: "+str(e))
+                               Domoticz.Log("Modbus connection failure")
+                               Domoticz.Log("retry updating register in 2 s")
+                               sleep(2.0)
+                               continue
+                           break                     
         data = payload
 # 	for devices with 'level' we need to do conversion on domoticz levels, like 0->10, 1->20, 2->30 etc        
         value = self.LevelValueConversion2Level(data)
@@ -145,12 +154,16 @@ class Switch:
         value = self.LevelValueConversion2Data(level)
         if Parameters["Mode6"] == 'Debug':
                 Domoticz.Log("updating register:"+str(self.register)+" with value: "+str(value))
-        try:
-            RS485.write_register(self.register,value)
-        except Exception as e:
-            Domoticz.Log("Connection failure: "+str(e));    
-#        write_register(registeraddress: int, value: Union[int, float], number_of_decimals: int = 0, functioncode: int = 16, signed: bool = False) → None[source]
-
+        while True:
+                try:
+                    RS485.write_register(self.register,value)                    
+                except Exception as e:
+#                    Domoticz.Log("Connection failure: "+str(e))
+                    Domoticz.Log("Modbus connection failure")
+                    Domoticz.Log("retry updating register in 2 s")
+                    sleep(2.0)
+                    continue
+                break
 
 
 class Dev:
@@ -183,7 +196,16 @@ class Dev:
 
     def UpdateValue(self,RS485):
                  if self.functioncode == 3 or self.functioncode == 4:
-                     payload = RS485.read_register(self.register,number_of_decimals=self.nod,functioncode=self.functioncode,signed=self.signed)
+                     while True:
+                           try:
+                                payload = RS485.read_register(self.register,number_of_decimals=self.nod,functioncode=self.functioncode,signed=self.signed)
+                           except Exception as e:
+#                    Domoticz.Log("Connection failure: "+str(e))
+                                Domoticz.Log("Modbus connection failure")
+                                Domoticz.Log("retry updating register in 2 s")
+                                sleep(2.0)
+                                continue
+                           break
                  data = payload
                  Devices[self.ID].Update(0,str(data)+';0',True) # force update, even if the voltage has no changed. 
                  if Parameters["Mode6"] == 'Debug':
