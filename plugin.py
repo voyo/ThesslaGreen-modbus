@@ -11,7 +11,7 @@ Requirements:
     2.Communication module Modbus USB to RS485 converter module
 """
 """
-<plugin key="ThesslaGreen" name="ThesslaGreen-Modbus" version="0.1" author="voyo@no-ip.pl">
+<plugin key="ThesslaGreen" name="ThesslaGreen-Modbus" version="0.8.1" author="voyo@no-ip.pl">
     <params>
         <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
         <param field="Port" label="Port" width="30px" required="true" default="502"/>
