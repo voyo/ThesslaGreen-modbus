@@ -431,7 +431,7 @@ class BasePlugin:
                         Domoticz.Log("Getting data from modbus for sensors - device:"+i.name+" ID:"+str(i.ID))
                         self.sensors[i.ID-1].UpdateValue(self.RS485)
                 except Exception as e:
-                        Domoticz.Log("Connection failure: "+str(e));
+                        Domoticz.Log("onHeartbeat, Connection failure: "+str(e));
                 else:
                         if Parameters["Mode6"] == 'Debug':
                             Domoticz.Log("in HeartBeat "+i.name+": "+format(i.value))
@@ -462,11 +462,10 @@ class BasePlugin:
         try:
             Domoticz.Log("onCommand called for device:"+str(u)+" Command:"+str(Command)+" Level:"+str(Level))
             self.settings[u-1-50].UpdateRegister(self.RS485,Command,Level)
+            Devices[u].Update(nValue=Devices[u].nValue, sValue=str(Level))
         except Exception as e:
             Domoticz.Log("Connection failure: "+str(e));
-# now refresh values in Domoticz            
-   #     Devices[u].Update(nValue=Devices[u].nValue, sValue=str(Level))
-        self.onHeartbeat()    
+
         return    
     
 
