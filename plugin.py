@@ -51,7 +51,7 @@ from pyModbusTCP.client import ModbusClient
 from pymodbus.constants import Endian
 from pymodbus.payload import BinaryPayloadDecoder
 
-
+RETRY = 3
 
 class Switch:
    def __init__(self,ID,name,register,functioncode: int = 3,options=None, Used: int = 1, signed: bool = False, Description=None, TypeName=None,Type: int = 244, SubType:int = 62 , SwitchType:int = 18):
@@ -169,6 +169,7 @@ class Switch:
                             try:
                                 payload = RS485.read_register(self.register,number_of_decimals=self.nod,functioncode=self.functioncode)
                             except Exception as e:
+                                Domoticz.Log("plugin exception: " + str(e)) # log the exception
                                 Domoticz.Log("Modbus connection failure")
                                 Domoticz.Log("retry updating register in 2 s")
                                 sleep(2.0)
@@ -177,31 +178,39 @@ class Switch:
         elif RS485.MyMode == "pymodbus":
                         Domoticz.Log("pymodbus")
                         if self.functioncode == 3:
-                            while True:
+                            retry = RETRY
+                            while retry > 0:
                                 Domoticz.Log("pymodys UpdateValue loop 2")
                                 try:
                                     #payload = RS485.read_input_registers(self.register,1)
-                                    Domoticz.Debug("pymodbus read_holding_registers")
+                                    Domoticz.Log("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)                                    
                                     value = BinaryPayloadDecoder.fromRegisters(RS485.read_holding_registers(self.register, 1), byteorder=Endian.Big, wordorder=Endian.Big).decode_16bit_int()
                                     payload = value / 10 ** self.nod  # decimal places, divide by power of 10
+                                    retry = 0
                                 except Exception as e:
+                                    Domoticz.Log("plugin exception: " + str(e)) # log the exception
                                     Domoticz.Log("pymodbus connection failure")
                                     Domoticz.Log("retry updating register in 2 s")
                                     sleep(2.0)
+                                    retry -= 1
                                     continue
                                 break
                         elif self.functioncode == 4:
-                            while True:
+                            retry = RETRY
+                            while retry > 0:
                                 Domoticz.Log("pymodys UpdateValue loop 3")
                                 try:
                                     #payload = RS485.read_holding_registers(self.register,1)
-                                    Domoticz.Debug("pymodbus read_input_registers")
+                                    Domoticz.Log("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)                                            
                                     value  = BinaryPayloadDecoder.fromRegisters(RS485.read_input_registers(self.register, 1), byteorder=Endian.Big, wordorder=Endian.Big).decode_16bit_int()
                                     payload = value / 10 ** self.nod  # decimal places, divide by power of 10
+                                    retry = 0
                                 except Exception as e:
+                                    Domoticz.Log("plugin exception: " + str(e)) # log the exception
                                     Domoticz.Log("pymodbus connection failure")
                                     Domoticz.Log("retry updating register in 2 s")
                                     sleep(2.0)
+                                    retry -= 1
                                     continue
                                 break
         Domoticz.Log("Updating switch: "+self.name+" wartosc z rejestru: "+str(payload))
@@ -246,23 +255,26 @@ class Switch:
                     try:
                         RS485.write_register(self.register,value)                    
                     except Exception as e:
-    #                    Domoticz.Log("Connection failure: "+str(e))
-                        Domoticz.Debug("Modbus connection failure")
-                        Domoticz.Debug("retry updating register in 2 s")
+                        Domoticz.Log("Connection failure: "+str(e))
+                        Domoticz.Log("Modbus connection failure")
+                        Domoticz.Log("retry updating register in 2 s")
                         sleep(2.0)
                         continue
                     break
         elif RS485.MyMode == "pymodbus":
-            while True:
+            retry = RETRY
+            while retry > 0:
                     Domoticz.Log("pymodbus UpdateRegister loop 5")
                     try:
                         Domoticz.Log("pymodbus write_single_register, value: "+str(value)+", register: "+str(self.register))
                         RS485.write_single_register(self.register,value)
+                        retry = 0
                     except Exception as e:
                         Domoticz.Log("Connection failure: "+str(e))
                         Domoticz.Log("pymodbus connection failure")
                         Domoticz.Log("retry updating register in 2 s")
                         sleep(2.0)
+                        retry -= 1
                         continue
                     Domoticz.Log("po continue, przed break")        
                     break
@@ -304,7 +316,7 @@ class Dev:
                                 try:
                                         payload = RS485.read_register(self.register,number_of_decimals=self.nod,functioncode=self.functioncode,signed=self.signed)
                                 except Exception as e:
-        #                    Domoticz.Log("Connection failure: "+str(e))
+                                        Domoticz.Log("Connection failure: "+str(e))
                                         Domoticz.Log("minimalmodbus connection failure")
                                         Domoticz.Log("retry updating register in 2 s")
                                         sleep(2.0)
@@ -313,31 +325,40 @@ class Dev:
                 elif RS485.MyMode == "pymodbus":
                         Domoticz.Log("pymodbus")
                         if self.functioncode == 3:
-                            while True:
+                            retry = RETRY
+                            while retry > 0:
                                 Domoticz.Log("pymodbus UpdateValue loop 7")
                                 try:
                                     #payload = RS485.read_input_registers(self.register,1)
-                                    Domoticz.Debug("pymodbus read_holding_registers")
+                                    Domoticz.Log("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)
                                     value  = BinaryPayloadDecoder.fromRegisters(RS485.read_holding_registers(self.register, 1), byteorder=Endian.Big, wordorder=Endian.Big).decode_16bit_int()
                                     payload = value / 10 ** self.nod  # decimal places, divide by power of 10
+                                    retry = 0
                                 except Exception as e:
+                                    Domoticz.Log("plugin exception: " + str(e)) # log the exception
                                     Domoticz.Log("pymodbus connection failure")
                                     Domoticz.Log("retry updating register in 2 s")
                                     sleep(2.0)
+                                    retry -= 1
                                     continue
                                 break
                         elif self.functioncode == 4:
-                            while True:
-                                Domoticz.Log("pymodbus UpdateValue loop 8")
+                            retry = RETRY
+                            while retry > 0:
+                                Domoticz.Log("pymodbus UpdateValue loop 8 tutaj, retry: "+str(retry))
                                 try:
                                     #payload = RS485.read_holding_registers(self.register,1)
-                                    Domoticz.Debug("pymodbus read_input_registers")
+                                    Domoticz.Log("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)
                                     value  = BinaryPayloadDecoder.fromRegisters(RS485.read_input_registers(self.register, 1), byteorder=Endian.Big, wordorder=Endian.Big).decode_16bit_int()
+                                    Domoticz.Log("pymodbus read_input_registers. value: "+str(value) + "hex: " + str(hex(value)) + " name: " + self.name )
                                     payload = value / 10 ** self.nod  # decimal places, divide by power of 10
+                                    retry = 0
                                 except Exception as e:
+                                    Domoticz.Log("plugin exception: " + str(e)) # log the exception
                                     Domoticz.Log("pymodbus connection failure")
                                     Domoticz.Log("retry updating register in 2 s")
                                     sleep(2.0)
+                                    retry -= 1
                                     continue
                                 break
 
@@ -374,7 +395,7 @@ class BasePlugin:
             elif Parameters["Mode4"] == "ASCII":
                 self.RS485.mode = minimalmodbus.MODE_ASCII  
         elif Parameters["Mode4"] == "TCP":
-            Domoticz.Debug("TCP mode is not supported by minimalmodbus, so we use pymodbus instead")
+            Domoticz.Log("TCP mode is not supported by minimalmodbus, so we use pymodbus instead")
         # TCP is not supported by minimalmodbus, so we use pymodbus
  #       c = ModbusClient(host="127.0.0.1", auto_open=True, auto_close=True)
             try: 
