@@ -313,7 +313,6 @@ class Dev:
                                         continue
                                 break
                 elif RS485.MyMode == "pymodbus":
-                        Domoticz.Log("pymodbus")
                         if self.functioncode == 3:
                             retry = RETRY
                             while retry > 0:
