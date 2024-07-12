@@ -184,7 +184,7 @@ class Switch:
                                 try:
                                     #payload = RS485.read_input_registers(self.register,1)
                                     Domoticz.Log("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)                                    
-                                    value = BinaryPayloadDecoder.fromRegisters(RS485.read_holding_registers(self.register, 1), byteorder=Endian.Big, wordorder=Endian.Big).decode_16bit_int()
+                                    value = BinaryPayloadDecoder.fromRegisters(RS485.read_holding_registers(self.register, 1), byteorder=Endian.BIG, wordorder=Endian.BIG).decode_16bit_int()
                                     payload = value / 10 ** self.nod  # decimal places, divide by power of 10
                                     retry = 0
                                 except Exception as e:
@@ -202,7 +202,7 @@ class Switch:
                                 try:
                                     #payload = RS485.read_holding_registers(self.register,1)
                                     Domoticz.Log("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)                                            
-                                    value  = BinaryPayloadDecoder.fromRegisters(RS485.read_input_registers(self.register, 1), byteorder=Endian.Big, wordorder=Endian.Big).decode_16bit_int()
+                                    value  = BinaryPayloadDecoder.fromRegisters(RS485.read_input_registers(self.register, 1), byteorder=Endian.BIG, wordorder=Endian.BIG).decode_16bit_int()
                                     payload = value / 10 ** self.nod  # decimal places, divide by power of 10
                                     retry = 0
                                 except Exception as e:
@@ -331,7 +331,7 @@ class Dev:
                                 try:
                                     #payload = RS485.read_input_registers(self.register,1)
                                     Domoticz.Log("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)
-                                    value  = BinaryPayloadDecoder.fromRegisters(RS485.read_holding_registers(self.register, 1), byteorder=Endian.Big, wordorder=Endian.Big).decode_16bit_int()
+                                    value  = BinaryPayloadDecoder.fromRegisters(RS485.read_holding_registers(self.register, 1), byteorder=Endian.BIG, wordorder=Endian.BIG).decode_16bit_int()
                                     payload = value / 10 ** self.nod  # decimal places, divide by power of 10
                                     retry = 0
                                 except Exception as e:
@@ -349,7 +349,7 @@ class Dev:
                                 try:
                                     #payload = RS485.read_holding_registers(self.register,1)
                                     Domoticz.Log("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)
-                                    value  = BinaryPayloadDecoder.fromRegisters(RS485.read_input_registers(self.register, 1), byteorder=Endian.Big, wordorder=Endian.Big).decode_16bit_int()
+                                    value  = BinaryPayloadDecoder.fromRegisters(RS485.read_input_registers(self.register, 1), byteorder=Endian.BIG, wordorder=Endian.BIG).decode_16bit_int()
                                     Domoticz.Log("pymodbus read_input_registers. value: "+str(value) + "hex: " + str(hex(value)) + " name: " + self.name )
                                     payload = value / 10 ** self.nod  # decimal places, divide by power of 10
                                     retry = 0
