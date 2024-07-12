@@ -162,7 +162,6 @@ class Switch:
 
    def UpdateValue(self,RS485):
         if RS485.MyMode == "minimalmodbus":
-            Domoticz.Log("minimalmodbus")
             if self.functioncode == 3 or self.functioncode == 4:
                         while True:
                             try:
@@ -175,7 +174,6 @@ class Switch:
                                 continue
                             break                     
         elif RS485.MyMode == "pymodbus":
-                        Domoticz.Log("pymodbus")
                         if self.functioncode == 3:
                             retry = RETRY
                             while retry > 0:
