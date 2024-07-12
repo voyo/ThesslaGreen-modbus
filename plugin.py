@@ -181,7 +181,7 @@ class Switch:
                             while retry > 0:
                                 try:
                                     #payload = RS485.read_input_registers(self.register,1)
-                                    Domoticz.Log("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)                                    
+                                    Domoticz.Debug("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)                                    
                                     value = BinaryPayloadDecoder.fromRegisters(RS485.read_holding_registers(self.register, 1), byteorder=Endian.BIG, wordorder=Endian.BIG).decode_16bit_int()
                                     payload = value / 10 ** self.nod  # decimal places, divide by power of 10
                                     retry = 0
@@ -198,7 +198,7 @@ class Switch:
                             while retry > 0:
                                 try:
                                     #payload = RS485.read_holding_registers(self.register,1)
-                                    Domoticz.Log("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)                                            
+                                    Domoticz.Debug("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)                                            
                                     value  = BinaryPayloadDecoder.fromRegisters(RS485.read_input_registers(self.register, 1), byteorder=Endian.BIG, wordorder=Endian.BIG).decode_16bit_int()
                                     payload = value / 10 ** self.nod  # decimal places, divide by power of 10
                                     retry = 0
@@ -210,12 +210,12 @@ class Switch:
                                     retry -= 1
                                     continue
                                 break
-        Domoticz.Log("Updating switch: "+self.name+" wartosc z rejestru: "+str(payload))
+        Domoticz.Debug("Updating switch: "+self.name+" value from register: "+str(payload))
         data = payload
 # 	for devices with 'level' we need to do conversion on domoticz levels, like 0->10, 1->20, 2->30 etc        
         value = self.LevelValueConversion2Level(data)
         self.value = value
-        Domoticz.Log("UPDATING switch: "+self.name+" Type: "+str(self.Type)+ " subType: "+str(self.SubType)+ " TypeName: "+self.TypeName+ " wartosc: "+str(value) )
+        Domoticz.Debug("Updating switch: "+self.name+" Type: "+str(self.Type)+ " subType: "+str(self.SubType)+ " TypeName: "+self.TypeName+ " wartosc: "+str(value) )
         if self.TypeName == "Switch" or (self.Type == 244 and self.SubType == 73):
             if value == 0:
                 Devices[self.ID].Update(nValue=0, sValue = "Off")
@@ -234,7 +234,7 @@ class Switch:
 
 
    def UpdateRegister(self,RS485,command,level):
-        Domoticz.Log("Updating register: "+str(self.register)+" with command: "+str(command)+" and level: "+str(level))
+        Domoticz.Debug("Updating register: "+str(self.register)+" with command: "+str(command)+" and level: "+str(level))
         if command == "Set Level":
             value = self.LevelValueConversion2Data(command,level)
         else:
@@ -245,23 +245,21 @@ class Switch:
 
 
         if Parameters["Mode6"] == 'Debug':
-                Domoticz.Log("updating register:"+str(self.register)+" with value: "+str(value))
+                Domoticz.Debug("updating register:"+str(self.register)+" with value: "+str(value))
         if RS485.MyMode == "minimalmodbus":
             while True:
-                    Domoticz.Log("minimalmodbus UpdateRegister loop 4")
                     try:
                         RS485.write_register(self.register,value)                    
                     except Exception as e:
-                        Domoticz.Log("Connection failure: "+str(e))
-                        Domoticz.Log("Modbus connection failure")
-                        Domoticz.Log("retry updating register in 2 s")
+                        Domoticz.Debug("Connection failure: "+str(e))
+                        Domoticz.Debug("Modbus connection failure")
+                        Domoticz.Debug("retry updating register in 2 s")
                         sleep(2.0)
                         continue
                     break
         elif RS485.MyMode == "pymodbus":
             retry = RETRY
             while retry > 0:
-                    Domoticz.Log("pymodbus UpdateRegister loop 5")
                     try:
                         Domoticz.Log("pymodbus write_single_register, value: "+str(value)+", register: "+str(self.register))
                         RS485.write_single_register(self.register,value)
@@ -355,7 +353,7 @@ class Dev:
                                 break
 
                             
-                Domoticz.Log("Device:"+self.name+" data="+str(payload)+" from register: "+str(hex(self.register)) )       
+                Domoticz.Debug("Device:"+self.name+" data="+str(payload)+" from register: "+str(hex(self.register)) )       
                 data = payload
                 Devices[self.ID].Update(0,str(data)+';0',True) # force update, even if the value has no changed. 
                 if Parameters["Mode6"] == 'Debug':
