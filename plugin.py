@@ -165,7 +165,6 @@ class Switch:
             Domoticz.Log("minimalmodbus")
             if self.functioncode == 3 or self.functioncode == 4:
                         while True:
-                            Domoticz.Log("minimalmodbus UpdateValue loop 1")
                             try:
                                 payload = RS485.read_register(self.register,number_of_decimals=self.nod,functioncode=self.functioncode)
                             except Exception as e:
@@ -180,7 +179,6 @@ class Switch:
                         if self.functioncode == 3:
                             retry = RETRY
                             while retry > 0:
-                                Domoticz.Log("pymodys UpdateValue loop 2")
                                 try:
                                     #payload = RS485.read_input_registers(self.register,1)
                                     Domoticz.Log("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)                                    
@@ -198,7 +196,6 @@ class Switch:
                         elif self.functioncode == 4:
                             retry = RETRY
                             while retry > 0:
-                                Domoticz.Log("pymodys UpdateValue loop 3")
                                 try:
                                     #payload = RS485.read_holding_registers(self.register,1)
                                     Domoticz.Log("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)                                            
@@ -310,7 +307,6 @@ class Dev:
                 if RS485.MyMode == "minimalmodbus":
                         if self.functioncode == 3 or self.functioncode == 4:
                             while True:
-                                Domoticz.Log("minimalmodbus UpdateValue loop 6")
                                 try:
                                         payload = RS485.read_register(self.register,number_of_decimals=self.nod,functioncode=self.functioncode,signed=self.signed)
                                 except Exception as e:
@@ -325,7 +321,6 @@ class Dev:
                         if self.functioncode == 3:
                             retry = RETRY
                             while retry > 0:
-                                Domoticz.Log("pymodbus UpdateValue loop 7")
                                 try:
                                     #payload = RS485.read_input_registers(self.register,1)
                                     Domoticz.Debug("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)
@@ -343,7 +338,6 @@ class Dev:
                         elif self.functioncode == 4:
                             retry = RETRY
                             while retry > 0:
-                                Domoticz.Log("pymodbus UpdateValue loop 8 tutaj, retry: "+str(retry))
                                 try:
                                     #payload = RS485.read_holding_registers(self.register,1)
                                     Domoticz.Debug("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)
