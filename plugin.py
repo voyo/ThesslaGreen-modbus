@@ -286,11 +286,13 @@ class Dev:
             if self.functioncode == 3:
                 try:
                     Domoticz.Debug("pymodbus read_holding_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)
-                    # FIXED: Use direct register access instead of deprecated BinaryPayloadDecoder
                     data = RS485.read_holding_registers(self.register, 1)
                     if data and len(data) >= 1:
                         value = data[0]
-                        payload = value / 10 ** self.nod  # decimal places, divide by power of 10
+                        Domoticz.Debug("pymodbus read_holding_registers. value: "+str(value) + "hex: " + str(hex(value)) + " name: " + self.name )
+                        if self.signed and value > 32767:
+                            value -= 65536
+                        payload = value / 10 ** self.nod
                     else:
                         Domoticz.Debug("pymodbus read_holding_registers failed - skipping update")
                         return
@@ -301,12 +303,13 @@ class Dev:
             elif self.functioncode == 4:
                 try:
                     Domoticz.Debug("pymodbus read_input_registers. register: "+str(self.register) + "hex: " + str(hex(self.register)) + " name: " + self.name)
-                    # FIXED: Use direct register access instead of deprecated BinaryPayloadDecoder
                     data = RS485.read_input_registers(self.register, 1)
                     if data and len(data) >= 1:
                         value = data[0]
                         Domoticz.Debug("pymodbus read_input_registers. value: "+str(value) + "hex: " + str(hex(value)) + " name: " + self.name )
-                        payload = value / 10 ** self.nod  # decimal places, divide by power of 10
+                        if self.signed and value > 32767:
+                            value -= 65536
+                        payload = value / 10 ** self.nod
                     else:
                         Domoticz.Debug("pymodbus read_input_registers failed - skipping update")
                         return
