@@ -3,7 +3,7 @@
 ThesslaGreen recuperator. Domoticz plugin.
 https://thesslagreen.com/
 Author: Wojtek Sawasciuk  <voyo@no-ip.pl>
-version 0.8.2
+version 0.8.3
 
 Requirements:
     1.python module minimalmodbus -> http://minimalmodbus.readthedocs.io/en/master/
@@ -11,7 +11,7 @@ Requirements:
     2.Communication module Modbus USB to RS485 converter module
 """
 """
-<plugin key="ThesslaGreen" name="ThesslaGreen-Modbus" version="0.8.2" author="voyo@no-ip.pl">
+<plugin key="ThesslaGreen" name="ThesslaGreen-Modbus" version="0.8.3" author="voyo@no-ip.pl">
     <params>
         <param field="Address" label="IP Address" width="200px" required="true" default="127.0.0.1"/>
         <param field="Port" label="Port" width="30px" required="true" default="502"/>
@@ -70,12 +70,24 @@ class Switch:
 
    def LevelValueConversion2Data(self,command,level):
         if command == 'On':
-            value = 1
+            if self.register == 4320:    # bypassOff: On = bypass aktywny (rejestr=0)
+                value = 0
+            elif self.register == 4210:  # airFlowRateManual: On = 100%
+                value = 100
+            else:
+                value = 1
         elif command == 'Off':
-            value = 0
+            if self.register == 4320:    # bypassOff: Off = bypass dezaktywowany (rejestr=1)
+                value = 1
+            elif self.register == 4210:  # airFlowRateManual: Off = minimum 10%
+                value = 10
+            else:
+                value = 0
         elif command == 'Set Level':
             if self.register==4208:
                     value = (level / 10) - 1
+            elif self.register==4210:    # airFlowRateManual: 10-100%
+                    value = max(10, min(100, level))
             elif self.register==4224:
                     if level == 0:
                         value = 0 # off
@@ -86,15 +98,15 @@ class Switch:
                     elif level==30:
                         value = 2 # kominek
                     elif level==40:
-                        value = 3 # WIETRZENIE (prze??. dzwonkowy)
+                        value = 3 # WIETRZENIE (przel. dzwonkowy)
                     elif level==50:
-                        value = 4 # WIETRZENIE (prze????cznik ON/OFF)
+                        value = 4 # WIETRZENIE (przelacznik ON/OFF)
                     elif level==60:
                         value = 5 # H2O/WIETRZENIE (higrostat)
                     elif level==70:
-                        value = 6 # JP/WIETRZENIE (cz. jako??ci pow.)
+                        value = 6 # JP/WIETRZENIE (cz. jakosci pow.)
                     elif level==80:
-                        value = 7 # WIETRZENIE (aktywacja r??czna)
+                        value = 7 # WIETRZENIE (aktywacja reczna)
                     elif level==90:
                         value = 8 # WIETRZENIE (tryb AUTOMATYCZNY)
                     elif level==100:
@@ -131,15 +143,15 @@ class Switch:
                 elif data==2:
                   value = 30 # kominek
                 elif data==3:
-                  value = 40 # WIETRZENIE (prze??. dzwonkowy)
+                  value = 40 # WIETRZENIE (przel. dzwonkowy)
                 elif data==4:
-                    value = 50 # WIETRZENIE (prze????cznik ON/OFF)
+                    value = 50 # WIETRZENIE (przelacznik ON/OFF)
                 elif data==5:
                     value = 60 # H2O/WIETRZENIE (higrostat)
                 elif data==6:
-                    value = 70 # JP/WIETRZENIE (cz. jako??ci pow.)
+                    value = 70 # JP/WIETRZENIE (cz. jakosci pow.)
                 elif data==7:
-                    value = 80 # WIETRZENIE (aktywacja r??czna)
+                    value = 80 # WIETRZENIE (aktywacja reczna)
                 elif data==8:
                     value = 90 # WIETRZENIE (tryb AUTOMATYCZNY)
                 elif data==9:
@@ -149,7 +161,11 @@ class Switch:
                 elif data==11:
                     value = 120 # PUSTY DOM
                 else:
-                    Domoticz.Log("Level value conversion - data not valid:"+str(data)+"register:"+self.register)
+                    Domoticz.Log("Level value conversion - data not valid:"+str(data)+"register:"+str(self.register))
+        if self.register==4210:  # airFlowRateManual: bezposrednio 10-100%
+                value = int(data)
+        if self.register==4320:  # bypassOff: odwrotna logika (0=aktywny->On, 1=dezakt->Off)
+                value = 1 - int(data)
         if Parameters["Mode6"] == 'Debug':
                Domoticz.Log("Conversion mapping from "+str(data)+" to "+str(value))
         return value
@@ -195,7 +211,7 @@ class Switch:
                     Domoticz.Debug("plugin exception: " + str(e))
                     Domoticz.Debug("pymodbus connection failure - skipping update")
                     return
-        
+
         Domoticz.Debug("Updating switch: "+self.name+" value from register: "+str(payload))
         data = payload
         # for devices with 'level' we need to do conversion on domoticz levels, like 0->10, 1->20, 2->30 etc
@@ -203,7 +219,10 @@ class Switch:
         self.value = value
         Domoticz.Debug("Updating switch: "+self.name+" Type: "+str(self.Type)+ " subType: "+str(self.SubType)+ " TypeName: "+self.TypeName+ " wartosc: "+str(value) )
         if self.TypeName == "Switch" or (self.Type == 244 and self.SubType == 73):
-            if value == 0:
+            if self.Switchtyp == 7:  # Dimmer
+                v = int(value)
+                Devices[self.ID].Update(nValue=2 if v > 0 else 0, sValue=str(v))
+            elif value == 0:
                 Devices[self.ID].Update(nValue=0, sValue = "Off")
             elif value > 0:
                 Devices[self.ID].Update(nValue=1, sValue = "On")
@@ -224,7 +243,11 @@ class Switch:
         if command == "Set Level":
             value = self.LevelValueConversion2Data(command,level)
         else:
-            if command == "On":
+            if self.register == 4320:    # bypassOff: odwrotna logika
+                value = 0 if command == "On" else 1
+            elif self.register == 4210:  # airFlowRateManual: On=100%, Off=10%
+                value = 100 if command == "On" else 10
+            elif command == "On":
                 value = 1
             elif command == "Off":
                 value = 0
@@ -248,7 +271,7 @@ class Switch:
                 return
 
 class Dev:
-    def __init__(self,ID,name,nod,register,functioncode: int = 3,options=None, Used: int = 1, signed: bool = False, Description=None, TypeName=None,Type: int = 0, SubType:int = 0 , SwitchType:int = 0  ):
+    def __init__(self,ID,name,nod,register,functioncode: int = 3,options=None, Used: int = 1, signed: bool = False, Description=None, TypeName=None,Type: int = 0, SubType:int = 0 , SwitchType:int = 0, alert_map=None):
         self.ID = ID
         self.name = name
         self.TypeName = TypeName if TypeName is not None else ""
@@ -263,6 +286,7 @@ class Dev:
         self.options = options if options is not None else None
         self.Used=Used
         self.Description = Description if Description is not None else ""
+        self.alert_map = alert_map
         if self.ID not in Devices:
             msg = "Registering device: "+self.name+" "+str(self.ID)+" "+self.TypeName+"  Description: "+str(self.Description);
             Domoticz.Log(msg)
@@ -320,7 +344,11 @@ class Dev:
 
         Domoticz.Debug("Device:"+self.name+" data="+str(payload)+" from register: "+str(hex(self.register)) )
         data = payload
-        Devices[self.ID].Update(0,str(data)+';0',True) # force update, even if the value has no changed.
+        if self.alert_map is not None:
+            nval, txt = self.alert_map.get(int(data), (0, str(data)))
+            Devices[self.ID].Update(nval, txt, True)
+        else:
+            Devices[self.ID].Update(0,str(data)+';0',True) # force update, even if the value has no changed.
         if Parameters["Mode6"] == 'Debug':
              Domoticz.Log("Device:"+self.name+" data="+str(data)+" from register: "+str(hex(self.register)) )
 
@@ -371,16 +399,24 @@ class BasePlugin:
                  Dev(7,"ambient_temp",1,22,functioncode=4,TypeName="Temperature",signed=True),
                  Dev(8,"supplyAirFlow",0,256,functioncode=3,Type=243,SubType=30),
                  Dev(9,"exhaustAirFlow",0,257,functioncode=3,Type=243,SubType=30),
-                 Dev(10,"Filtr nawiewny",0,4482,functioncode=3,Type=243,SubType=6,Description="cfgSZF_FN_new, stopień zuzycia filtra nawiewnego (0-100%)"),
-                 Dev(11,"Filtr wywiewny",0,4483,functioncode=3,Type=243,SubType=6,Description="cfgSZF_FW_new, stopień zuzycia filtra wywiewnego (0-100%)"),
+                 Dev(10,"Filtr nawiewny",0,4482,functioncode=3,Type=243,SubType=6,Description="cfgSZF_FN_new, stopien zuzycia filtra nawiewnego (0-100%)"),
+                 Dev(11,"Filtr wywiewny",0,4483,functioncode=3,Type=243,SubType=6,Description="cfgSZF_FW_new, stopien zuzycia filtra wywiewnego (0-100%)"),
+                 Dev(12,"Bypass status",0,4330,functioncode=3,Type=243,SubType=22,
+                     alert_map={0: (0,'nieaktywny'), 1: (1,'freeheating'), 2: (2,'freecooling')}),
+                 Dev(13,"Alarm (E)",0,8192,functioncode=3,Type=243,SubType=22,
+                     alert_map={0: (0,'OK'), 1: (4,'ALARM')}),
+                 Dev(14,"Blad (S)",0,8193,functioncode=3,Type=243,SubType=22,
+                     alert_map={0: (0,'OK'), 1: (4,'BLAD')}),
             ]
         self.settings = [
-                 Switch(51,"onOffPanelMode",4387,functioncode=3,Type=244,SubType=73,SwitchType=0, Description="Rekuperacja - przełącznik ON/OFF)"),
+                 Switch(51,"onOffPanelMode",4387,functioncode=3,Type=244,SubType=73,SwitchType=0, Description="Rekuperacja - przelacznik ON/OFF)"),
                  Switch(52,"mode",4208,functioncode=3,options={"LevelActions": "|act1| |act2|","LevelNames": "|" + "Manual" + "|" + "Automatic" + "|" + "Temporary", "LevelOffHidden": "true", "SelectorStyle": "0"}),
                  Switch(53,"specialMode",4224,functioncode=3,options={"LevelActions": "|act1| |act2|","LevelNames": "|" + "Wylaczone" + "|" + "Okap" + "|" + "Kominek" + "|" + "WIETRZENIE (przel. dzwonkowy)" + "|" + "WIETRZENIE (przel. on/off)" +
                  "|" + "H2O/Wietrzenie (higrostat)" +"|"+ "JP/Wietrzenie (cz.jakosci pow.)" + "|" + "WIETRZENIE (aktywacja reczna)" + "|" + "WIETRZENIE (tryb AUTOMATYCZNY)" + "|" + "WIETRZENIE (tryb MANUALNY)" + "|" + "OTWARTE OKNA" +
                  "|" + "PUSTY DOM"
-                  , "LevelOffHidden": "false", "SelectorStyle": "1"})
+                  , "LevelOffHidden": "false", "SelectorStyle": "1"}),
+                 Switch(54,"Wentylacja (%)",4210,functioncode=3,Type=244,SubType=73,SwitchType=7),
+                 Switch(55,"Bypass",4320,functioncode=3,Type=244,SubType=73,SwitchType=0),
                   ]
 
     def onStop(self):
@@ -399,7 +435,6 @@ class BasePlugin:
                 else:
                         if Parameters["Mode6"] == 'Debug':
                             Domoticz.Debug("in HeartBeat "+i.name+": "+format(i.value))
-            self.runInterval = int(Parameters["Mode3"])
 
             for i in self.settings:
                 l = len(self.settings)
