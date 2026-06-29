@@ -120,10 +120,6 @@ class Switch:
                         value = 0 # off
                     elif level==10:
                         value = 1 # on
-            elif self.register==4304:   # comfortModePanel: 0=EKO, 1=KOMFORT
-                    value = 0 if level == 0 else 1
-            elif self.register==4212:   # supplyAirTemperatureManual: temp * 2 (krok 0.5°C)
-                    value = max(20, min(90, int(float(level) * 2)))
             else:
                         Domoticz.Log("Level value conversion - data not valid level:"+str(level)+" register:"+str(self.register))
         else:   Domoticz.Log("Level value conversion - data not valid command:"+str(command)+" register:"+str(self.register))
@@ -170,10 +166,6 @@ class Switch:
                 value = int(data)
         if self.register==4320:  # bypassOff: odwrotna logika (0=aktywny->On, 1=dezakt->Off)
                 value = 1 - int(data)
-        if self.register==4304:  # comfortModePanel: 0=EKO(Off), 1=KOMFORT(On)
-                value = int(data)
-        if self.register==4212:  # supplyAirTemperatureManual: rejestr * 0.5 = °C
-                value = data * 0.5
         if Parameters["Mode6"] == 'Debug':
                Domoticz.Log("Conversion mapping from "+str(data)+" to "+str(value))
         return value
@@ -425,8 +417,6 @@ class BasePlugin:
                   , "LevelOffHidden": "false", "SelectorStyle": "1"}),
                  Switch(54,"Wentylacja (%)",4210,functioncode=3,Type=244,SubType=73,SwitchType=7),
                  Switch(55,"Bypass",4320,functioncode=3,Type=244,SubType=73,SwitchType=0),
-                 Switch(56,"EKO/KOMFORT",4304,functioncode=3,Type=244,SubType=73,SwitchType=0),
-                 Switch(57,"Temp. nawiewu (manual)",4212,functioncode=3,Type=242,SubType=1,SwitchType=0),
                   ]
 
     def onStop(self):
