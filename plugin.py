@@ -459,7 +459,12 @@ class BasePlugin:
         try:
             Domoticz.Log("onCommand called for device:"+str(u)+" Command:"+str(Command)+" Level:"+str(Level))
             self.settings[u-1-50].UpdateRegister(self.RS485,Command,Level)
-            Devices[u].Update(nValue=Devices[u].nValue, sValue=str(Level))
+            if Command == "On":
+                Devices[u].Update(nValue=1, sValue="On")
+            elif Command == "Off":
+                Devices[u].Update(nValue=0, sValue="Off")
+            else:
+                Devices[u].Update(nValue=1, sValue=str(Level))
         except Exception as e:
             Domoticz.Log("Connection failure: "+str(e));
 
