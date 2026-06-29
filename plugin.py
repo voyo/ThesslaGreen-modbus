@@ -120,6 +120,8 @@ class Switch:
                         value = 0 # off
                     elif level==10:
                         value = 1 # on
+            elif self.register==4331:   # bypassUserMode: tryb 1-3
+                    value = int(level / 10)
             else:
                         Domoticz.Log("Level value conversion - data not valid level:"+str(level)+" register:"+str(self.register))
         else:   Domoticz.Log("Level value conversion - data not valid command:"+str(command)+" register:"+str(self.register))
@@ -166,6 +168,8 @@ class Switch:
                 value = int(data)
         if self.register==4320:  # bypassOff: odwrotna logika (0=aktywny->On, 1=dezakt->Off)
                 value = 1 - int(data)
+        if self.register==4331:  # bypassUserMode: tryb 1-3
+                value = int(data) * 10
         if Parameters["Mode6"] == 'Debug':
                Domoticz.Log("Conversion mapping from "+str(data)+" to "+str(value))
         return value
@@ -417,6 +421,7 @@ class BasePlugin:
                   , "LevelOffHidden": "false", "SelectorStyle": "1"}),
                  Switch(54,"Wentylacja (%)",4210,functioncode=3,Type=244,SubType=73,SwitchType=7),
                  Switch(55,"Bypass",4320,functioncode=3,Type=244,SubType=73,SwitchType=0),
+                 Switch(56,"Bypass tryb",4331,functioncode=3,options={"LevelNames":"|tryb 1|tryb 2|tryb 3","LevelOffHidden":"true","SelectorStyle":"0"}),
                   ]
 
     def onStop(self):
