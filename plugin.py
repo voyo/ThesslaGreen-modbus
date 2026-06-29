@@ -410,7 +410,7 @@ class BasePlugin:
             ]
         self.settings = [
                  Switch(51,"onOffPanelMode",4387,functioncode=3,Type=244,SubType=73,SwitchType=0, Description="Rekuperacja - przelacznik ON/OFF)"),
-                 Switch(52,"mode",4208,functioncode=3,options={"LevelActions": "|act1| |act2|","LevelNames": "|" + "Manual" + "|" + "Automatic" + "|" + "Temporary", "LevelOffHidden": "true", "SelectorStyle": "0"}),
+                 Switch(52,"mode",4208,functioncode=3,options={"LevelActions": "|act1| |act2|","LevelNames": "|" + "Automatic" + "|" + "Manual" + "|" + "Temporary", "LevelOffHidden": "true", "SelectorStyle": "0"}),
                  Switch(53,"specialMode",4224,functioncode=3,options={"LevelActions": "|act1| |act2|","LevelNames": "|" + "Wylaczone" + "|" + "Okap" + "|" + "Kominek" + "|" + "WIETRZENIE (przel. dzwonkowy)" + "|" + "WIETRZENIE (przel. on/off)" +
                  "|" + "H2O/Wietrzenie (higrostat)" +"|"+ "JP/Wietrzenie (cz.jakosci pow.)" + "|" + "WIETRZENIE (aktywacja reczna)" + "|" + "WIETRZENIE (tryb AUTOMATYCZNY)" + "|" + "WIETRZENIE (tryb MANUALNY)" + "|" + "OTWARTE OKNA" +
                  "|" + "PUSTY DOM"
